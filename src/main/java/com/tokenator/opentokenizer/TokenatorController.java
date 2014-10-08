@@ -9,16 +9,16 @@ public class TokenatorController {
 
     @RequestMapping("/tokenize")
     public TokenizeResponse tokenize(@RequestParam(value="pan") String pan) {
-        return new TokenizeResponse(testConvert(pan, 1));
+        return new TokenizeResponse(rotatePanDigits(pan, 1));
     }
 
     @RequestMapping("/detokenize")
     public DetokenizeResponse detokenize(@RequestParam(value="pan") String pan) {
-        return new DetokenizeResponse(testConvert(pan, 9));
+        return new DetokenizeResponse(rotatePanDigits(pan, 9));
     }
 
 
-    private String testConvert(String pan, int rotateDigitsBy) {
+    private String rotatePanDigits(String pan, int rotateDigitsBy) {
         byte[] panBytes = pan.getBytes();
 
         for (int i = 0; i < panBytes.length; i++) {
