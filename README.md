@@ -1,4 +1,4 @@
-Tokinator
+Tokenator
 =========
 
 The Open Tokenizer Project
