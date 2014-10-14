@@ -17,3 +17,8 @@ spring.jpa.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
 spring.jpa.show_sql=true
 spring.datasource.platform=mysql
 spring.datasource.initialize=false
+
+#
+#  If you're optimizing for speed, set this to false
+#
+http.mappers.json-pretty-print=true

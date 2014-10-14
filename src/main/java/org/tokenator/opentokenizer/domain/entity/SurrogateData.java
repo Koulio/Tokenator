@@ -1,16 +1,16 @@
 package org.tokenator.opentokenizer.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.hibernate.annotations.ForeignKey;
-import org.tokenator.opentokenizer.util.DateSerializer_yyMM;
+import org.tokenator.opentokenizer.util.DateSerializer;
 
 import javax.persistence.*;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+
+import static org.tokenator.opentokenizer.util.DateSerializer.DATE_FORMAT;
 
 @Entity
 @Table(name = "surrogate_data", indexes = {
@@ -18,6 +18,7 @@ import java.util.Date;
     }
 )
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
+@JsonPropertyOrder({"id", "pan", "expr"})
 public class SurrogateData {
 
     @Id
@@ -30,15 +31,15 @@ public class SurrogateData {
 
     @Temporal(TemporalType.DATE)
     @Column(name = "expr", nullable = false)
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyMM", timezone="UTC")
-    @JsonSerialize(using = DateSerializer_yyMM.class)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern=DATE_FORMAT, timezone="UTC")
+    @JsonSerialize(using = DateSerializer.class)
     private Date expr;
 
     @ManyToOne
     @NotNull
     @JoinColumn(name="primary_data_id", nullable = false)
     @ForeignKey(name="fk_surrogate_primary")
-    //@JsonBackReference
+    @JsonBackReference
     private PrimaryData primaryData;
 
     public SurrogateData() {

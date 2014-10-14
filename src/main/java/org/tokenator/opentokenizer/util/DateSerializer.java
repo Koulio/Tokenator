@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class DateSerializer_yyMM extends JsonSerializer<Date> {
+public class DateSerializer extends JsonSerializer<Date> {
 
     public static final String DATE_FORMAT = "yyMM";
     public static TimeZone UTC = TimeZone.getTimeZone("UTC");

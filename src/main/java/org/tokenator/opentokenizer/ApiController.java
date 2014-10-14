@@ -1,14 +1,17 @@
 package org.tokenator.opentokenizer;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.tokenator.opentokenizer.domain.entity.PrimaryData;
 import org.tokenator.opentokenizer.domain.entity.SurrogateData;
 import org.tokenator.opentokenizer.domain.repository.PrimaryDataRepository;
-import org.tokenator.opentokenizer.util.DateSerializer_yyMM;
 
-import java.text.ParseException;
+import javax.transaction.Transactional;
+import java.util.Date;
+
+import static org.tokenator.opentokenizer.util.DateSerializer.DATE_FORMAT;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -21,6 +24,13 @@ public class ApiController {
         this.primaryDataRepo = primaryDataRepo;
     }
 
+
+   /*
+    *  Create a primary data entry.  Example:
+    *
+    *   $ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629718", "expr": "1801"}' \
+    *       http://localhost:8080/api/v1/primaries/
+    */
     @RequestMapping(
             value = "/primaries",
             method = RequestMethod.POST
@@ -30,6 +40,12 @@ public class ApiController {
         return primaryDataRepo.save(primaryData);
     }
 
+
+    /*
+     *  Lookup primary PAN data by id. Example retrieving primary data for id=1:
+     *
+     *   $ curl -X GET http://localhost:8080/api/v1/primaries/1
+     */
     @RequestMapping(
             value = "/primaries/{primaryId}",
             method = RequestMethod.GET
@@ -39,6 +55,11 @@ public class ApiController {
         return primaryDataRepo.findOne(primaryId);
     }
 
+    /*
+     *  Lookup primary data by pan and yyMM expiration date.  Example:
+     *
+     *   $ curl -X GET http://localhost:8080/api/v1/primaries/4046460664629718/1801
+     */
     @RequestMapping(
             value = "/primaries/{primaryPan}/{primaryExpr}",
             method = RequestMethod.GET
@@ -46,52 +67,48 @@ public class ApiController {
     @ResponseStatus(HttpStatus.CREATED)
     public PrimaryData findPrimaryByPanAndExpr(
             @PathVariable(value="primaryPan") String primaryPan,
-            @PathVariable(value="primaryExpr") String primaryExpr) throws ParseException {
-        return primaryDataRepo.findByPanAndExpr(primaryPan, DateSerializer_yyMM.convert(primaryExpr));
+            @PathVariable(value="primaryExpr")
+            @DateTimeFormat(pattern = DATE_FORMAT) Date primaryExpr) {
+        return primaryDataRepo.findByPanAndExpr(primaryPan, primaryExpr);
     }
 
-
-
+    /*
+     *  Create a surrogate for a primary data entry with the specified id.  Example:
+     *
+     * $ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "98765432109876", "expr": "1801"}' \
+     *     http://localhost:8080/api/v1/primaries/1/surrogates/
+     */
     @RequestMapping(
             value = "/primaries/{primaryId}/surrogates/",
             method = RequestMethod.POST
     )
     @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
     public PrimaryData createSurrogate(
             @PathVariable(value="primaryId") Long primaryId,
-            @RequestBody SurrogateData surrogateData
-    ) throws ParseException {
+            @RequestBody SurrogateData surrogateData) {
         PrimaryData primary = primaryDataRepo.findOne(primaryId);
         if (primary != null) {
             primary.addSurrogate(surrogateData);
         }
-        return primaryDataRepo.save(primary);
+        return primary;
     }
+
 
     /*
-    @RequestMapping(
-            value = "/primaries/{primaryPan}/expr/{primaryExprYYMM}/surrogates/pan/{surrogatePan/expr/{surrogateExprYYMM}",
-            method = RequestMethod.POST
-    )
-    @ResponseStatus(HttpStatus.CREATED)
-    public PrimaryData createSurrogate(
-            @PathVariable(value="primaryDataId") Long primaryDataId,
-            @PathVariable(value="surrogatePan") String pan,
-            @PathVariable(value="exprYYMM") String exprYYMM) {
-        PrimaryData primary = new PrimaryData(pan, convertExprStr(exprYYMM));
-        return primaryDataRepo.save(primary);
-    }
-    */
-
-
+     *  Find the primary data that owns the requested surrogate pan+expr. Example:
+     *
+     *   $ curl -X GET http://localhost:8080/api/v1/primaries/98765432109876/1801
+     */
     @RequestMapping(
             value = "/primaries/surrogates/{surrogatePan}/{surrogateExpr}",
             method = RequestMethod.GET
     )
     public PrimaryData findPrimaryOfSurrogate(
             @PathVariable(value="surrogatePan") String surrogatePan,
-            @PathVariable(value="surrogateExpr") String surrogateExpr) throws ParseException {
-        return primaryDataRepo.findBySurrogate(surrogatePan, DateSerializer_yyMM.convert(surrogateExpr));
+            @PathVariable(value="surrogateExpr")
+            @DateTimeFormat(pattern = DATE_FORMAT) Date surrogateExpr) {
+        return primaryDataRepo.findBySurrogate(surrogatePan, surrogateExpr);
     }
 
 }
