@@ -42,3 +42,6 @@ nbproject/
 
 # virtual machine crash logs
 hs_err_pid*
+
+# Don't put files with passwords in source control
+application.properties
