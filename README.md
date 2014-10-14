@@ -10,14 +10,46 @@ To build and run the project use:
 ./gradlew clean bootRun
 ```
 
-Here are some examples feeding the stub URLs data:
+Here's you can create a primary PAN entry:
 
 ```
-$ curl -X POST -d "pan=0123456789" http://127.0.0.1:8080/tokenize ; echo
-{"surrogatePan":"1234567890"}
+$ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629718", "expr": "1801"}' \
+    http://localhost:8080/api/v1/primaries/
+{
+  "id" : 1,
+  "pan" : "4046460664629718",
+  "expr" : "1801",
+  "surrogates" : [ ]
+}
 
-$ curl -X POST -d "pan=1234567890" http://127.0.0.1:8080/detokenize ; echo
-{"pan":"0123456789"}
+#
+#  Two different ways to retrieve the primary data entry created (and returned)
+#  in the previous command:
+#
+$ curl -X GET http://localhost:8080/api/v1/primaries/1
+$ curl -X GET http://localhost:8080/api/v1/primaries/4046460664629718/1801
+
+#
+#  Add a surrogate entry to the above primary data entry:
+#
+curl -X POST -H 'Content-Type: application/json' -d '{"pan": "98765432109876", "expr": "1702"}' \
+    http://localhost:8080/api/v1/primaries/1/surrogates/
+{
+  "id" : 1,
+  "pan" : "4046460664629718",
+  "expr" : "1801",
+  "surrogates" : [ {
+    "id" : 1,
+    "pan" : "98765432109876",
+    "expr" : "1702"
+  } ]
+}
+
+#
+#  Lookup the primary entry for the surrogate entry created above:
+#
+$ curl -X GET http://localhost:8080/api/v1/primaries/surrogates/98765432109876/1801
+
 ```
 
 If you're using MySQL, you can use the commands below to create a database
