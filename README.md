@@ -3,6 +3,20 @@ Tokenator
 
 The Open Tokenizer Project
 
+If you're using MySQL, you can use the commands below to create a database
+and role user for it before running tokenator for the first time:
+```
+create database YOUR_DB_SCHEMA_NAME;
+
+create user 'YOUR_TOKENATOR_USERNAME'@'localhost' identified by 'YOUR_PASSWORD';
+create user 'YOUR_TOKENATOR_USERNAME'@'%' identified by 'YOUR_PASSWORD';
+
+grant all privileges ON YOUR_DB_SCHEMA_NAME.* TO 'YOUR_TOKENATOR_USERNAME'@'localhost';
+grant all privileges ON YOUR_DB_SCHEMA_NAME.* TO 'YOUR_TOKENATOR_USERNAME'@'%';
+
+flush privileges;
+quit;
+```
 
 To build and run the project use:
 
@@ -10,7 +24,7 @@ To build and run the project use:
 ./gradlew clean bootRun
 ```
 
-Here's you can create a primary PAN entry:
+Curl examples using the API calls:
 
 ```
 $ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629718", "expr": "1801"}' \
@@ -61,17 +75,4 @@ $ curl -X GET http://127.0.0.1:8080/api/v1/primaries/surrogates/98765432109876/1
 }
 ```
 
-If you're using MySQL, you can use the commands below to create a database
-and role user for it before running tokenator for the first time:
-```
-create database YOUR_DB_SCHEMA_NAME;
 
-create user 'YOUR_TOKENATOR_USERNAME'@'localhost' identified by 'YOUR_PASSWORD';
-create user 'YOUR_TOKENATOR_USERNAME'@'%' identified by 'YOUR_PASSWORD';
-
-grant all privileges ON YOUR_DB_SCHEMA_NAME.* TO 'YOUR_TOKENATOR_USERNAME'@'localhost';
-grant all privileges ON YOUR_DB_SCHEMA_NAME.* TO 'YOUR_TOKENATOR_USERNAME'@'%';
-
-flush privileges;
-quit;
-```
