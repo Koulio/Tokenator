@@ -2,7 +2,6 @@ package org.tokenator.opentokenizer;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.tokenator.opentokenizer.domain.entity.PrimaryData;
 import org.tokenator.opentokenizer.util.DateSerializer;
 
 import java.util.Date;
@@ -20,9 +19,9 @@ public class EntityNotFoundException extends RuntimeException {
 
     private static String buildMessage(Class<?> entityClass, Long id) {
         StringBuilder sb = new StringBuilder(entityClass.getSimpleName());
-        sb.append(" with id '");
+        sb.append(" with id ");
         sb.append(id);
-        sb.append("' not found");
+        sb.append(" not found");
         return sb.toString();
     }
 
@@ -30,9 +29,9 @@ public class EntityNotFoundException extends RuntimeException {
         StringBuilder sb = new StringBuilder(entityClass.getSimpleName());
         sb.append(" with pan='");
         sb.append(pan);
-        sb.append("' and expr='");
+        sb.append(" and expr=");
         sb.append(DateSerializer.convert(expr));
-        sb.append("' not found");
+        sb.append(" not found");
         return sb.toString();
     }
 }
