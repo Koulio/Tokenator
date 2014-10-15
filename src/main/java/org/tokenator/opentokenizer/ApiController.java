@@ -1,5 +1,6 @@
 package org.tokenator.opentokenizer;
 
+import org.apache.commons.validator.routines.checkdigit.CheckDigitException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -10,6 +11,8 @@ import org.tokenator.opentokenizer.domain.entity.PrimaryData;
 import org.tokenator.opentokenizer.domain.entity.SurrogateData;
 import org.tokenator.opentokenizer.domain.repository.PrimaryDataRepository;
 import org.tokenator.opentokenizer.domain.repository.SurrogateDataRepository;
+
+import static org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit.LUHN_CHECK_DIGIT;
 
 import javax.transaction.Transactional;
 import java.util.Date;
@@ -45,6 +48,7 @@ public class ApiController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     public PrimaryData createPrimary(@RequestBody PrimaryData primaryData) {
+        primaryData.setPan(validatePanAndAdjustLuhn(primaryData.getPan()));
         return primaryDataRepo.save(primaryData);
     }
 
@@ -127,6 +131,7 @@ public class ApiController {
             throw new EntityNotFoundException(PrimaryData.class, primaryId);
         }
 
+        surrogateData.setPan(validatePanAndAdjustLuhn(surrogateData.getPan()));
         primary.addSurrogate(surrogateData);
 
         return primary;
@@ -179,6 +184,38 @@ public class ApiController {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(value=HttpStatus.CONFLICT,reason="Entity already exists")
     public void duplicateEntryExists() {
+    }
+
+
+    /*
+     *  If the PAN ends in an 'X', the 'X' is replaced by a correct Luhn check
+     *  digit, otherwise we verify the existing Luhn check digit.
+     *
+     *  Throws: InvalidPanException if the PAN is invalid.
+     */
+    String validatePanAndAdjustLuhn(String newPan) {
+        int len = newPan.length();
+        if (len < 12) {
+            throw new InvalidPanException("PAN must be at least 12 digits");
+        } else if (len > 19) {
+            throw new InvalidPanException("PAN exceeds 19 digits");
+        }
+
+        char lastChar = newPan.charAt(len - 1);
+        if (lastChar == 'x' || lastChar == 'X') {
+            newPan = newPan.substring(0, len - 1);
+            try {
+                newPan += LUHN_CHECK_DIGIT.calculate(newPan);
+            } catch (CheckDigitException e) {
+                throw new InvalidPanException("Invalid PAN sequence");
+            }
+        } else {
+            if (!LUHN_CHECK_DIGIT.isValid(newPan)) {
+                throw new InvalidPanException("Luhn check failed, add an 'X' to end of PAN for auto calculation");
+            }
+        }
+
+        return newPan;
     }
 
 }
