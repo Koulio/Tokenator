@@ -62,7 +62,7 @@ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "98765432109876", "
 #
 #  Lookup the primary entry for the surrogate entry created above:
 #
-$ curl -X GET http://127.0.0.1:8080/api/v1/primaries/surrogates/98765432109876/1702
+$ curl -X GET http://localhost:8080/api/v1/primaries/surrogates/98765432109876/1702
 {
   "id" : 1,
   "pan" : "4046460664629718",
