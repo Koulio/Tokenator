@@ -126,5 +126,6 @@ Successful HTTP Response Codes:
 * 204 (No Content) - successfull deletions (response body is empty)
 
 Error HTTP Response Codes:
-* 404 (Not Found)
-* 400 (Bad Request)
+* 400 (Bad Request) - most likely an invalid parameter
+* 404 (Not Found) - lookup of entry that doesn't exist
+* 409 (Conflict) - attempt to create an entry that already exists
