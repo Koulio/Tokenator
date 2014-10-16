@@ -6,8 +6,7 @@ The Open Tokenizer Project
 
 #### Check out the source code
 ```
-# Won't need the username after we make this repository public
-$ git clone https://YOUR_GITHUB_USERNAME@github.com/SimplyTapp/Tokenator
+$ git clone https://github.com/SimplyTapp/Tokenator
 ```
 
 #### Configure the application.properties file
@@ -34,60 +33,69 @@ flush privileges;
 quit;
 ```
 
-#### Build and run the project:
-
+#### Build and run the project
 ```
 ./gradlew clean bootRun
 ```
 
 #### Test REST API calls with curl
 
+###### Setup
+Even with JSON pretty printing enabled in your application.properties, there will
+not be a newline at the end of the HTTP body.  Put this line in your .curlrc for
+prettier output:
+```
+$ echo '-w "\n"' >> ~/.curlrc
+```
 
-###### Create a primary PAN:
-
-The entry below may already exist in the database, so adjust the PAN or
-experation date as needed.  The PAN can be optionally terminated with an
-'X', in which case the Luhn checkdigit will be automatically calculated.
+###### Create a Primary entry
+The PAN below may already exist in the database, so adjust the number or
+experation (YYMM) as needed.  You can optionally terminate the PAN with an 'X'
+and the Luhn checkdigit will be automatically calculated and appended.
 
 ```
 $ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629X", "expr": "2201"}' http://localhost:8080/api/v1/primaries/
 ```
-###### Primary Pan Creation Output:
+###### Output of Primary Entry Creation
 ```
 {
-  "id" : 1,
-  "pan" : "4046460664629718",
-  "expr" : "1801",
+  "id" : 9,
+  "pan" : "40464606646297",
+  "expr" : "2201",
   "surrogates" : [ ]
 }
 ```
 
-
-###### Two different ways to retrieve the primary data entry created (and returned)
-in the previous command:
+###### Retrieve a Primary entry
+By ID (in this example using ID=9):
 ```
 $ curl -X GET http://localhost:8080/api/v1/primaries/1
-$ curl -X GET http://localhost:8080/api/v1/primaries/4046460664629718/1801
 ```
-
+By PAN and expiration (YYMM):
+```
+$ curl -X GET http://localhost:8080/api/v1/primaries/40464606646297/2201
+```
+Later we'll also show how to retrieve a primary entry by one of its surrogate
+entries.
 
 ###### Add a Surrogate PAN
-Again, adjust the PAN as needed and use an 'X' on the end to have a valid Luhn
-checksum appended to the end:
+Again, adjust the PAN as needed.  If you don't want to calculate a valid Luhn
+check digit, append an 'X' to the end of the PAN.  The command below attaches
+the Surrogate entry to the Primary entry with ID=9
 
 ```
-curl -X POST -H 'Content-Type: application/json' -d '{"pan": "98765432109876", "expr": "1702"}' http://localhost:8080/api/v1/primaries/1/surrogates/
+curl -X POST -H 'Content-Type: application/json' -d '{"pan": "9876543210987X", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
 ```
-###### Surrogate PAN Creation Output:
+###### Surrogate Creation Returns the full Primary Entry
 ```
 {
-  "id" : 1,
-  "pan" : "4046460664629718",
-  "expr" : "1801",
+  "id" : 9,
+  "pan" : "40464606646297",
+  "expr" : "2201",
   "surrogates" : [ {
-    "id" : 1,
-    "pan" : "98765432109876",
-    "expr" : "1702"
+    "id" : 5,
+    "pan" : "98765432109875",
+    "expr" : "1801"
   } ]
 }
 ```
@@ -95,15 +103,27 @@ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "98765432109876", "
 ###### Lookup the Primary PAN for a Surrogate:
 This method uses the surrogate PAN and expiration (YYMM) date:
 ```
-$ curl -X GET http://localhost:8080/api/v1/primaries/surrogates/98765432109876/1702
+$ curl -X GET http://localhost:8080/api/v1/primaries/surrogates/98765432109875/1801
 ```
 
 ###### Delete a Surrogate Entry
+The command below deletes the surrogate ID=5.  The ID values of surrogates are
+separate from primary ID values, but globaly unique between surrogates.
 ````
-$ curl 
-````
-###### Delete a primary Entry
-````
-$ curl 
-````
+$ curl -X DELETE http://localhost:8080/api/v1/surrogates/5
+```
 
+###### Delete a Primary Entry
+Delete the primary entry with ID=9.
+````
+$ curl -X DELETE http://localhost:8080/api/v1/primaries/9
+````
+###### Notes:
+Successful HTTP Response Codes:
+* Response status of successfull lookups is 200 (OK)
+* Response status of successfull creation methods is 201 (Created)
+* Response status of successfull deletions is 204 (No Content - empty response body)
+
+Error HTTP Response Codes:
+* 404 (Not Found)
+* 400 (Bad Request)
