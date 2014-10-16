@@ -78,7 +78,7 @@ $ curl -X GET http://localhost:8080/api/v1/primaries/40464606646297/2201
 Later we'll also show how to retrieve a primary entry by one of its surrogate
 entries.
 
-###### Add a Surrogate PAN
+###### Create a Surrogate Entry
 Again, adjust the PAN as needed.  If you don't want to calculate a valid Luhn
 check digit, append an 'X' to the end of the PAN.  The command below attaches
 the Surrogate entry to the Primary entry with ID=9
@@ -86,7 +86,8 @@ the Surrogate entry to the Primary entry with ID=9
 ```
 curl -X POST -H 'Content-Type: application/json' -d '{"pan": "9876543210987X", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
 ```
-###### Surrogate Creation Returns the full Primary Entry
+###### Output of Surrogate Creation
+The output of surrogate creation contains the full enclosing primary entry
 ```
 {
   "id" : 9,
@@ -120,9 +121,9 @@ $ curl -X DELETE http://localhost:8080/api/v1/primaries/9
 ````
 ###### Notes:
 Successful HTTP Response Codes:
-* 200 (OK) -- successfull lookup
-* 201 (Created) -- successfull creation
-* 204 (No Content) -- successfull deletions (response body is empty)
+* 200 (OK) - successfull lookup
+* 201 (Created) - successfull creation
+* 204 (No Content) - successfull deletions (response body is empty)
 
 Error HTTP Response Codes:
 * 404 (Not Found)
