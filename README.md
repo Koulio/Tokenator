@@ -69,7 +69,7 @@ $ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629X",
 ###### Retrieve a Primary entry
 By ID (in this example using ID=9):
 ```
-$ curl -X GET http://localhost:8080/api/v1/primaries/1
+$ curl -X GET http://localhost:8080/api/v1/primaries/9
 ```
 By PAN and expiration (YYMM):
 ```
