@@ -51,3 +51,5 @@ application.properties
 *.keystore
 *.p12
 
+# Exceptions to keep gradle wrapper files
+!**/gradle/wrapper/*.*
