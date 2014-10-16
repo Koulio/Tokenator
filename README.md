@@ -120,9 +120,9 @@ $ curl -X DELETE http://localhost:8080/api/v1/primaries/9
 ````
 ###### Notes:
 Successful HTTP Response Codes:
-* Response status of successfull lookups is 200 (OK)
-* Response status of successfull creation methods is 201 (Created)
-* Response status of successfull deletions is 204 (No Content - empty response body)
+* 200 (OK) -- successfull lookup
+* 201 (Created) -- successfull creation
+* 204 (No Content) -- successfull deletions (response body is empty)
 
 Error HTTP Response Codes:
 * 404 (Not Found)
