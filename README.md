@@ -43,14 +43,16 @@ quit;
 #### Test REST API calls with curl
 
 
-This will create a new primary PAN entry.  The entry below may already exist in the database,
-so adjust the PAN or experation date as needed.  The PAN can be optionally terminated with an
+###### Create a primary PAN:
+
+The entry below may already exist in the database, so adjust the PAN or
+experation date as needed.  The PAN can be optionally terminated with an
 'X', in which case the Luhn checkdigit will be automatically calculated.
 
 ```
 $ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629X", "expr": "2201"}' http://localhost:8080/api/v1/primaries/
 ```
-Output:
+###### Primary Pan Creation Output:
 ```
 {
   "id" : 1,
@@ -61,7 +63,7 @@ Output:
 ```
 
 
-Two different ways to retrieve the primary data entry created (and returned)
+###### Two different ways to retrieve the primary data entry created (and returned)
 in the previous command:
 ```
 $ curl -X GET http://localhost:8080/api/v1/primaries/1
@@ -69,11 +71,14 @@ $ curl -X GET http://localhost:8080/api/v1/primaries/4046460664629718/1801
 ```
 
 
-Add a surrogate entry to the above primary data entry:
+###### Add a Surrogate PAN
+Again, adjust the PAN as needed and use an 'X' on the end to have a valid Luhn
+checksum appended to the end:
+
 ```
 curl -X POST -H 'Content-Type: application/json' -d '{"pan": "98765432109876", "expr": "1702"}' http://localhost:8080/api/v1/primaries/1/surrogates/
 ```
-Output:
+###### Surrogate PAN Creation Output:
 ```
 {
   "id" : 1,
@@ -87,21 +92,18 @@ Output:
 }
 ```
 
-Lookup the primary entry for the surrogate entry created above:
+###### Lookup the Primary PAN for a Surrogate:
+This method uses the surrogate PAN and expiration (YYMM) date:
 ```
 $ curl -X GET http://localhost:8080/api/v1/primaries/surrogates/98765432109876/1702
 ```
 
-Output:
-```
-{
-  "id" : 1,
-  "pan" : "4046460664629718",
-  "expr" : "1801",
-  "surrogates" : [ {
-    "id" : 1,
-    "pan" : "98765432109876",
-    "expr" : "1702"
-  } ]
-}
-```
+###### Delete a Surrogate Entry
+````
+$ curl 
+````
+###### Delete a primary Entry
+````
+$ curl 
+````
+
