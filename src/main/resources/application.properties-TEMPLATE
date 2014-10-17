@@ -17,8 +17,16 @@ spring.jpa.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
 spring.jpa.show_sql=true
 spring.datasource.platform=mysql
 spring.datasource.initialize=false
-spring.datasource.testOnBorrow=true
-spring.datasource.validationQuery=SELECT 1
+spring.datasource.max-idle=4
+spring.datasource.min-idle=1
+spring.datasource.initial-size=1
+spring.datasource.validation-query=select 1
+spring.datasource.test-on-borrow=true
+spring.datasource.test-on-return=true
+spring.datasource.test-while-idle=true
+spring.datasource.time-between-eviction-runs-millis=600000
+spring.datasource.min-evictable-idle-time-millis=600000
+spring.datasource.max-wait=600000
 
 #
 #  If you're optimizing for speed, set this to false
