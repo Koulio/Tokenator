@@ -84,13 +84,13 @@ check digit, append an 'X' to the end of the PAN.  The command below attaches
 the Surrogate entry to the Primary entry with ID=9
 
 ```
-curl -X POST -H 'Content-Type: application/json' -d '{"pan": "9876543210987X", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
+curl -X POST -H 'Content-Type: application/json' -d '{"san": "9876543210987X", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
 ```
 ###### Output of Surrogate Creation
 ```
 {
   "id" : 5,
-  "pan" : "98765432109875",
+  "san" : "98765432109875",
   "expr" : "1801"
 }
 ```
