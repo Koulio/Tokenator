@@ -12,11 +12,11 @@ public interface PrimaryDataRepository extends JpaRepository<PrimaryData, Long> 
     @Query( "SELECT pd " +
             "FROM  PrimaryData pd " +
             "JOIN  pd.surrogates sd " +
-            "WHERE sd.pan  = :surrogatePan " +
+            "WHERE sd.san  = :san " +
             "AND   sd.expr = :expr"
         )
     PrimaryData findBySurrogate(
-            @Param("surrogatePan") String surrogatePan,
+            @Param("san") String san,
             @Param("expr") Date expr
     );
 
