@@ -14,11 +14,11 @@ import static org.tokenator.opentokenizer.util.DateSerializer.DATE_FORMAT;
 
 @Entity
 @Table(name = "surrogate_data", indexes = {
-        @Index(name = "sur_pan_ex_idx",  columnList="pan,expr", unique = true)
+        @Index(name = "sur_san_ex_idx",  columnList="san,expr", unique = true)
     }
 )
 @JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
-@JsonPropertyOrder({"id", "pan", "expr"})
+@JsonPropertyOrder({"id", "san", "expr"})
 public class SurrogateData {
 
     @Id
@@ -26,8 +26,8 @@ public class SurrogateData {
     private Long id;
 
     @Digits(integer = 19, fraction = 0)
-    @Column(name = "pan", length=19, nullable = false)
-    private String pan;
+    @Column(name = "san", length=19, nullable = false)
+    private String san; // surrogate account number
 
     @Temporal(TemporalType.DATE)
     @Column(name = "expr", nullable = false)
@@ -53,12 +53,12 @@ public class SurrogateData {
         this.id = id;
     }
 
-    public String getPan() {
-        return pan;
+    public String getSan() {
+        return san;
     }
 
-    public void setPan(String pan) {
-        this.pan = pan;
+    public void setSan(String san) {
+        this.san = san;
     }
 
     public Date getExpr() {

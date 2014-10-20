@@ -30,7 +30,7 @@ public class PrimaryData {
 
     @Digits(integer = 19, fraction = 0)
     @Column(name = "pan", length=19, nullable = false)
-    private String pan;
+    private String pan;  // primary account number
 
     @Temporal(TemporalType.DATE)
     @Column(name = "expr", nullable = false)

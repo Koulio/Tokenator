@@ -48,7 +48,7 @@ public class ApiController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     public PrimaryData createPrimary(@RequestBody PrimaryData primaryData) {
-        primaryData.setPan(validatePanAndAdjustLuhn(primaryData.getPan()));
+        primaryData.setPan(validateAcctNumAndAdjustLuhn(primaryData.getPan()));
         return primaryDataRepo.save(primaryData);
     }
 
@@ -59,14 +59,14 @@ public class ApiController {
     *   $ curl -X GET http://localhost:8080/api/v1/primaries/1
     */
     @RequestMapping(
-            value = "/primaries/{primaryId}",
+            value = "/primaries/{id}",
             method = RequestMethod.GET
     )
     @ResponseStatus(HttpStatus.CREATED)
-    public PrimaryData findPrimaryById(@PathVariable(value="primaryId") Long primaryId) {
-        PrimaryData primary = primaryDataRepo.findOne(primaryId);
+    public PrimaryData findPrimaryById(@PathVariable(value="id") Long id) {
+        PrimaryData primary = primaryDataRepo.findOne(id);
         if (primary == null) {
-            throw new EntityNotFoundException(PrimaryData.class, primaryId);
+            throw new EntityNotFoundException(PrimaryData.class, id);
         }
         return primary;
     }
@@ -78,33 +78,33 @@ public class ApiController {
      *   $ curl -X GET http://localhost:8080/api/v1/primaries/4046460664629718/1801
      */
     @RequestMapping(
-            value = "/primaries/{primaryPan}/{primaryExpr}",
+            value = "/primaries/{pan}/{expr}",
             method = RequestMethod.GET
     )
     @ResponseStatus(HttpStatus.OK)
     public PrimaryData findPrimaryByPanAndExpr(
-            @PathVariable(value="primaryPan") String primaryPan,
-            @PathVariable(value="primaryExpr")
-            @DateTimeFormat(pattern = DATE_FORMAT) Date primaryExpr) {
+            @PathVariable(value="pan") String pan,
+            @PathVariable(value="expr")
+            @DateTimeFormat(pattern = DATE_FORMAT) Date expr) {
 
-        PrimaryData primary = primaryDataRepo.findByPanAndExpr(primaryPan, primaryExpr);
+        PrimaryData primary = primaryDataRepo.findByPanAndExpr(pan, expr);
         if (primary == null) {
-            throw new EntityNotFoundException(PrimaryData.class, primaryPan, primaryExpr);
+            throw new EntityNotFoundException(PrimaryData.class, pan, expr);
         }
         return primary;
     }
 
     /*
-     *  Delete primary PAN data by id.  Surrogates are deleted by cascade. Example
+     *  Delete primary entry by id.  Surrogates are deleted by cascade. Example:
      *
      *   $ curl -X DELETE http://localhost:8080/api/v1/primaries/1
      */
     @RequestMapping(
-            value = "/primaries/{primaryId}",
+            value = "/primaries/{id}",
             method = RequestMethod.DELETE
     )
     @ResponseStatus(HttpStatus.NO_CONTENT) /* 204, success but no response payload */
-    public void deletePrimaryById(@PathVariable(value="primaryId") long primaryId) {
+    public void deletePrimaryById(@PathVariable(value="id") long primaryId) {
         primaryDataRepo.delete(primaryId);
     }
 
@@ -131,7 +131,7 @@ public class ApiController {
             throw new EntityNotFoundException(PrimaryData.class, primaryId);
         }
 
-        surrogateData.setPan(validatePanAndAdjustLuhn(surrogateData.getPan()));
+        surrogateData.setSan(validateAcctNumAndAdjustLuhn(surrogateData.getSan()));
         primary.addSurrogate(surrogateData);
 
         return surrogateData;
@@ -141,27 +141,27 @@ public class ApiController {
     /*
      *  Find the primary data that owns the requested surrogate pan+expr. Example:
      *
-     *   $ curl -X GET http://localhost:8080/api/v1/primaries/98765432109876/1801
+     *   $ curl -X GET http://localhost:8080/api/v1/primaries/surrogates/98765432109876/1801
      */
     @RequestMapping(
-            value = "/primaries/surrogates/{surrogatePan}/{surrogateExpr}",
+            value = "/primaries/surrogates/{san}/{expr}",
             method = RequestMethod.GET
     )
     @ResponseStatus(HttpStatus.OK)
     public PrimaryData findPrimaryOfSurrogate(
-            @PathVariable(value="surrogatePan") String surrogatePan,
-            @PathVariable(value="surrogateExpr")
-            @DateTimeFormat(pattern = DATE_FORMAT) Date surrogateExpr) {
-        PrimaryData primary = primaryDataRepo.findBySurrogate(surrogatePan, surrogateExpr);
+            @PathVariable(value="san") String san,
+            @PathVariable(value="expr")
+            @DateTimeFormat(pattern = DATE_FORMAT) Date expr) {
+        PrimaryData primary = primaryDataRepo.findBySurrogate(san, expr);
         if (primary == null) {
-            throw new EntityNotFoundException(SurrogateData.class, surrogatePan, surrogateExpr);
+            throw new EntityNotFoundException(SurrogateData.class, san, expr);
         }
         return primary;
     }
 
 
    /*
-    *  Delete surrogate PAN data by id. Example
+    *  Delete surrogate entry by id. Example
     *
     *   $ curl -X DELETE http://localhost:8080/api/v1/surrogates/1
     */
@@ -188,34 +188,34 @@ public class ApiController {
 
 
     /*
-     *  If the PAN ends in an 'X', the 'X' is replaced by a correct Luhn check
+     *  If the account number ends in an 'X', the 'X' is replaced by a correct Luhn check
      *  digit, otherwise we verify the existing Luhn check digit.
      *
-     *  Throws: InvalidPanException if the PAN is invalid.
+     *  Throws: InvalidPanException if the account number is invalid.
      */
-    String validatePanAndAdjustLuhn(String newPan) {
-        int len = newPan.length();
+    String validateAcctNumAndAdjustLuhn(String accountNumber) {
+        int len = accountNumber.length();
         if (len < 12) {
-            throw new InvalidPanException("PAN must be at least 12 digits");
+            throw new InvalidAccountNumberException("PAN must be at least 12 digits");
         } else if (len > 19) {
-            throw new InvalidPanException("PAN exceeds 19 digits");
+            throw new InvalidAccountNumberException("PAN exceeds 19 digits");
         }
 
-        char lastChar = newPan.charAt(len - 1);
+        char lastChar = accountNumber.charAt(len - 1);
         if (lastChar == 'x' || lastChar == 'X') {
-            newPan = newPan.substring(0, len - 1);
+            accountNumber = accountNumber.substring(0, len - 1);
             try {
-                newPan += LUHN_CHECK_DIGIT.calculate(newPan);
+                accountNumber += LUHN_CHECK_DIGIT.calculate(accountNumber);
             } catch (CheckDigitException e) {
-                throw new InvalidPanException("Invalid PAN sequence");
+                throw new InvalidAccountNumberException("Invalid PAN sequence");
             }
         } else {
-            if (!LUHN_CHECK_DIGIT.isValid(newPan)) {
-                throw new InvalidPanException("Luhn check failed, add an 'X' to end of PAN for auto calculation");
+            if (!LUHN_CHECK_DIGIT.isValid(accountNumber)) {
+                throw new InvalidAccountNumberException("Luhn check failed, add an 'X' to end of account number for auto calculation");
             }
         }
 
-        return newPan;
+        return accountNumber;
     }
 
 }
