@@ -87,17 +87,11 @@ the Surrogate entry to the Primary entry with ID=9
 curl -X POST -H 'Content-Type: application/json' -d '{"pan": "9876543210987X", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
 ```
 ###### Output of Surrogate Creation
-The output of surrogate creation contains the full enclosing primary entry
 ```
 {
-  "id" : 9,
-  "pan" : "40464606646297",
-  "expr" : "2201",
-  "surrogates" : [ {
-    "id" : 5,
-    "pan" : "98765432109875",
-    "expr" : "1801"
-  } ]
+  "id" : 5,
+  "pan" : "98765432109875",
+  "expr" : "1801"
 }
 ```
 
