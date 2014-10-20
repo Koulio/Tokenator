@@ -122,7 +122,7 @@ public class ApiController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
-    public PrimaryData createSurrogate(
+    public SurrogateData createSurrogate(
             @PathVariable(value="primaryId") Long primaryId,
             @RequestBody SurrogateData surrogateData) {
 
@@ -134,7 +134,7 @@ public class ApiController {
         surrogateData.setPan(validatePanAndAdjustLuhn(surrogateData.getPan()));
         primary.addSurrogate(surrogateData);
 
-        return primary;
+        return surrogateData;
     }
 
 
