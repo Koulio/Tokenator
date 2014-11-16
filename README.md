@@ -50,11 +50,12 @@ $ echo '-w "\n"' >> ~/.curlrc
 
 ###### Create a Primary entry
 The PAN below may already exist in the database, so adjust the number or
-experation (YYMM) as needed.  You can optionally terminate the PAN with an 'X'
-and the Luhn checkdigit will be automatically calculated and appended.
+expiration (YYMM) as needed.  You can optionally place a single 'L' character
+anywhere in the PAN and it will be replaced by the digit that yields a valid
+Luhn check over the entire account number.
 
 ```
-$ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629X", "expr": "2201"}' http://localhost:8080/api/v1/primaries/
+$ curl -X POST -H 'Content-Type: application/json' -d '{"pan": "4046460664629L", "expr": "2201"}' http://localhost:8080/api/v1/primaries/
 ```
 ###### Output of Primary Entry Creation
 ```
@@ -80,11 +81,12 @@ entries.
 
 ###### Create a Surrogate Entry
 Again, adjust the PAN as needed.  If you don't want to calculate a valid Luhn
-check digit, append an 'X' to the end of the PAN.  The command below attaches
-the Surrogate entry to the Primary entry with ID=9
+check digit, place a single 'L' value somewhere in the account number that will
+be replaced by the value that generates a valid Luhn on the account number. The
+command below attaches the Surrogate entry to the Primary entry with ID=9
 
 ```
-curl -X POST -H 'Content-Type: application/json' -d '{"san": "9876543210987X", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
+curl -X POST -H 'Content-Type: application/json' -d '{"san": "9876543210987L", "expr": "1801"}' http://localhost:8080/api/v1/primaries/9/surrogates/
 ```
 ###### Output of Surrogate Creation
 ```
@@ -115,9 +117,9 @@ $ curl -X DELETE http://localhost:8080/api/v1/primaries/9
 ````
 ###### Notes:
 Successful HTTP Response Codes:
-* 200 (OK) - successfull lookup
-* 201 (Created) - successfull creation
-* 204 (No Content) - successfull deletions (response body is empty)
+* 200 (OK) - successful lookup
+* 201 (Created) - successful creation
+* 204 (No Content) - successful deletions (response body is empty)
 
 Error HTTP Response Codes:
 * 400 (Bad Request) - most likely an invalid parameter

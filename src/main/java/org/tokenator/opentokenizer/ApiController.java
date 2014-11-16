@@ -1,6 +1,5 @@
 package org.tokenator.opentokenizer;
 
-import org.apache.commons.validator.routines.checkdigit.CheckDigitException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -11,8 +10,7 @@ import org.tokenator.opentokenizer.domain.entity.PrimaryData;
 import org.tokenator.opentokenizer.domain.entity.SurrogateData;
 import org.tokenator.opentokenizer.domain.repository.PrimaryDataRepository;
 import org.tokenator.opentokenizer.domain.repository.SurrogateDataRepository;
-
-import static org.apache.commons.validator.routines.checkdigit.LuhnCheckDigit.LUHN_CHECK_DIGIT;
+import org.tokenator.opentokenizer.util.LuhnUtil;
 
 import javax.transaction.Transactional;
 import java.util.Date;
@@ -48,7 +46,7 @@ public class ApiController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     public PrimaryData createPrimary(@RequestBody PrimaryData primaryData) {
-        primaryData.setPan(validateAcctNumAndAdjustLuhn(primaryData.getPan()));
+        primaryData.setPan(LuhnUtil.validateAcctNumAndAdjustLuhn(primaryData.getPan()));
         return primaryDataRepo.save(primaryData);
     }
 
@@ -131,7 +129,7 @@ public class ApiController {
             throw new EntityNotFoundException(PrimaryData.class, primaryId);
         }
 
-        surrogateData.setSan(validateAcctNumAndAdjustLuhn(surrogateData.getSan()));
+        surrogateData.setSan(LuhnUtil.validateAcctNumAndAdjustLuhn(surrogateData.getSan()));
         primary.addSurrogate(surrogateData);
 
         return surrogateData;
@@ -184,38 +182,6 @@ public class ApiController {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(value=HttpStatus.CONFLICT,reason="Entity already exists")
     public void duplicateEntryExists() {
-    }
-
-
-    /*
-     *  If the account number ends in an 'X', the 'X' is replaced by a correct Luhn check
-     *  digit, otherwise we verify the existing Luhn check digit.
-     *
-     *  Throws: InvalidPanException if the account number is invalid.
-     */
-    String validateAcctNumAndAdjustLuhn(String accountNumber) {
-        int len = accountNumber.length();
-        if (len < 12) {
-            throw new InvalidAccountNumberException("PAN must be at least 12 digits");
-        } else if (len > 19) {
-            throw new InvalidAccountNumberException("PAN exceeds 19 digits");
-        }
-
-        char lastChar = accountNumber.charAt(len - 1);
-        if (lastChar == 'x' || lastChar == 'X') {
-            accountNumber = accountNumber.substring(0, len - 1);
-            try {
-                accountNumber += LUHN_CHECK_DIGIT.calculate(accountNumber);
-            } catch (CheckDigitException e) {
-                throw new InvalidAccountNumberException("Invalid PAN sequence");
-            }
-        } else {
-            if (!LUHN_CHECK_DIGIT.isValid(accountNumber)) {
-                throw new InvalidAccountNumberException("Luhn check failed, add an 'X' to end of account number for auto calculation");
-            }
-        }
-
-        return accountNumber;
     }
 
 }
