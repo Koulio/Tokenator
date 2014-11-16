@@ -20,60 +20,63 @@ public class LuhnUtil {
     */
     public static String validateAcctNumAndAdjustLuhn(String accountNum) {
         int numDigits = accountNum.length();
+
         if (numDigits < 12) {
-            throw new InvalidAccountNumberException("PAN must be at least 12 digits");
-        } else if (numDigits > 19) {
-            throw new InvalidAccountNumberException("PAN exceeds 19 digits");
+            throw new InvalidAccountNumberException("Account number must be at least 12 digits");
+        }
+
+        if (numDigits > 19) {
+            throw new InvalidAccountNumberException("Account number exceeds 19 digits");
         }
 
         byte[] accountNumBytes = accountNum.getBytes();
         int replacementPos = -1;
-        boolean isEvenPos = false; // is even starting from right
         boolean replacementPosIsEven = false;
         int sum = 0;
 
-        for(int pos = numDigits - 1; pos >= 0; pos--) {
-            byte b = accountNumBytes[pos];
-            if (b >= '0' && b <= '9') {
-                int digit = b - '0';
-                if (isEvenPos) {
-                    digit *= 2;
-                    if (digit > 9) {
-                        digit -= 9;
-                    }
-                }
-                sum += digit;
-            } else if (b == 'L' || b == 'X') {
+        boolean isEvenPos = false; // from right hand side
+
+        for(int pos = numDigits - 1; pos >= 0; pos--, isEvenPos = !isEvenPos) {
+            byte asciiDigit = accountNumBytes[pos];
+
+            if (asciiDigit == 'L' || asciiDigit == 'X') {
                 if (replacementPos != -1) {
-                    throw new InvalidAccountNumberException("PAN can only have one Luhn placeholder");
+                    throw new InvalidAccountNumberException("Account number has multiple Luhn placeholders");
                 }
                 replacementPos = pos;
                 replacementPosIsEven = isEvenPos;
-            } else {
-                throw new InvalidAccountNumberException("PAN has invalid character");
+                continue; // sum += 0
             }
 
-            isEvenPos = !isEvenPos;
+            if (asciiDigit < '0' || asciiDigit > '9') {
+                throw new InvalidAccountNumberException("Account number has invalid character");
+            }
+
+            int digit = asciiDigit - '0';
+            if (isEvenPos) {
+                digit *= 2;
+                if (digit > 9) {
+                    digit -= 9;
+                }
+            }
+
+            sum += digit;
         }
 
-        if (sum == 0) {
-            throw new InvalidAccountNumberException("Luhn checksum is zero");
-        }
 
         int remainder = sum % 10;
 
         if (replacementPos != -1) {
-            int placeholderValue = (remainder > 0) ? 10 - remainder : 0;
+            int replacementValue = (remainder > 0) ? 10 - remainder : 0;
             if (replacementPosIsEven) {
-                if (placeholderValue % 2 != 0) {
-                    // remainder was odd, add 9 to make it even before dividing by 2
-                    placeholderValue += 9;
+                if (replacementValue % 2 != 0) {
+                    replacementValue += 9;
                 }
-                placeholderValue /= 2;
+                replacementValue /= 2;
             }
-            accountNumBytes[replacementPos] = (byte) ('0' + placeholderValue);
+            accountNumBytes[replacementPos] = (byte) ('0' + replacementValue);
         } else if (remainder != 0) {
-            throw new InvalidAccountNumberException("Luhn check failed, place an 'L' in the account number for auto calculation");
+            throw new InvalidAccountNumberException("Luhn checksum failed");
         }
 
         return new String(accountNumBytes);
